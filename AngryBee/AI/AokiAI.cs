@@ -11,7 +11,7 @@ namespace AngryBee.AI
     public class AokiAI : MCTProcon29Protocol.AIFramework.AIBase
     {
         //PointEvaluator.Base PointEvaluator_Dispersion = new PointEvaluator.Dispersion();
-        PointEvaluator.Base PointEvaluator_Distance = new PointEvaluator.Distance();
+        PointEvaluator.Distance PointEvaluator_Distance = new PointEvaluator.Distance();
         PointEvaluator.Base PointEvaluator_Normal = new PointEvaluator.Normal();
         VelocityPoint[] WayEnumerator = { (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1) };
         ObjectPool<Ways> WaysPool = new ObjectPool<Ways>();
@@ -49,9 +49,25 @@ namespace AngryBee.AI
             this.greedyMaxDepth = greedyMaxDepth;
         }
 
+        bool isInitialized = false;
         //1ターン = 深さ2
         protected override void Solve()
         {
+            if(!isInitialized)
+            {
+                isInitialized = true;
+                int BoardSum = 0;
+                for (int x = 0; x < MyBoard.Width; ++x)
+                    for (int y = 0; y < MyBoard.Height; ++y)
+                    {
+                        if (ScoreBoard[x, y] < 0) BoardSum--;
+                        else BoardSum += ScoreBoard[x, y];
+                    }
+                PointEvaluator.Distance.Avg = BoardSum / (int)(MyBoard.Width * MyBoard.Height);
+            }
+
+            PointEvaluator_Distance.Calculate(ScoreBoard, MyBoard, 0, new Player(MyAgent1, MyAgent2), new Player(EnemyAgent1, EnemyAgent2));
+
             for (int i = 0; i < 50; ++i)
             {
                 dp1[i].Score = int.MinValue;
@@ -60,11 +76,13 @@ namespace AngryBee.AI
 
             int deepness = StartDepth;
             int maxDepth = (TurnCount - CurrentTurn) * 2 + 2;
-            PointEvaluator.Base evaluator = (TurnCount / 3 * 2) < CurrentTurn ? PointEvaluator_Normal : PointEvaluator_Distance;
+            PointEvaluator.Base evaluator = (TurnCount * 2 / 3) < CurrentTurn ? PointEvaluator_Normal : PointEvaluator_Distance;
+            //PointEvaluator.Base evaluator = PointEvaluator_Distance;
             SearchState state = new SearchState(MyBoard, EnemyBoard, new Player(MyAgent1, MyAgent2), new Player(EnemyAgent1, EnemyAgent2), WaysPool);
             int score = PointEvaluator_Normal.Calculate(ScoreBoard, state.MeBoard, 0, state.Me, state.Enemy) - PointEvaluator_Normal.Calculate(ScoreBoard, state.EnemyBoard, 0, state.Enemy, state.Me);
 
             Log("TurnCount = {0}, CurrentTurn = {1}", TurnCount, CurrentTurn);
+            Log("AVG = {0}", PointEvaluator.Distance.Avg);
             if (!(lastTurnDecided is null)) Log("IsAgent1Moved = {0}, IsAgent2Moved = {1}, lastTurnDecided = {2}", IsAgent1Moved, IsAgent2Moved, lastTurnDecided);
 
             if (!(lastTurnDecided is null) && IsAgent1Moved == false && IsAgent2Moved == false && score > 0)    //勝っている状態で競合していたら
@@ -89,7 +107,7 @@ namespace AngryBee.AI
                 int UnMoveAgentNum = 0;
                 if (IsAgent1Moved == false && lastTurnDecided.MeAgent1.Equals(best1.MeAgent1)) ++UnMoveAgentNum;
                 if (IsAgent2Moved == false && lastTurnDecided.MeAgent2.Equals(best1.MeAgent2)) ++UnMoveAgentNum;
-                if (UnMoveAgentNum > 0)
+                if (UnMoveAgentNum >= 1)
                 {
                     NegaMax(deepness, state, int.MinValue + 1, int.MaxValue, 0, evaluator, best1, greedyDepth);
                     Decided best2 = new Decided(dp2[0].Agent1Way, dp2[0].Agent2Way);
