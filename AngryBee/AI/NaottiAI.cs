@@ -11,6 +11,7 @@ namespace AngryBee.AI
     public class NaottiAI : MCTProcon29Protocol.AIFramework.AIBase
     {
         PointEvaluator.Base PointEvaluator_Dispersion = new PointEvaluator.Dispersion();
+        //PointEvaluator.Base PointEvaluator_Distance = new PointEvaluator.Distance();
         PointEvaluator.Base PointEvaluator_Normal = new PointEvaluator.Normal();
         VelocityPoint[] WayEnumerator = { (0, -1), (1, -1), (1, 0), (1, 1), (0, 1), (-1, 1), (-1, 0), (-1, -1) };
         ObjectPool<Ways> WaysPool = new ObjectPool<Ways>();
@@ -113,7 +114,7 @@ namespace AngryBee.AI
         protected override void EndSolve(object sender, EventArgs e)
         {
             base.EndSolve(sender, e);
-            lastTurnDecided = SolverResultList[0];  //0番目の手を指したとする。（次善手を人間が選んで競合した～ということがなければOK）
+            if(CurrentTurn <= TurnCount) lastTurnDecided = SolverResultList[0];  //0番目の手を指したとする。（次善手を人間が選んで競合した～ということがなければOK）
         }
 
         //Meが動くとする。「Meのスコア - Enemyのスコア」の最大値を返す。

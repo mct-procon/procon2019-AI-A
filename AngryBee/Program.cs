@@ -8,7 +8,7 @@ namespace AngryBee
     {
         public static void Main(string[] args)
 		{
-			int aiType = 0;
+            int aiType = 0;
 			Console.WriteLine("AIの種類を入力(0:Aho, 1:Naotti, 2:Test, 3:TilePointAI, 4:AokiAI)");
 			aiType = int.Parse(Console.ReadLine());
 
@@ -55,7 +55,10 @@ namespace AngryBee
             //Console.WriteLine("探索の深さの上限を入力（深さ = ターン数 * 2, 5以下が目安）");
             //Ai_PriorityErasing.MaxDepth = int.Parse(Console.ReadLine());
 
+            
             AI.StartSync(portId, true);
+
+            //Choice.WriteFile();
 
             /*byte width = 12;
             byte height = 12;

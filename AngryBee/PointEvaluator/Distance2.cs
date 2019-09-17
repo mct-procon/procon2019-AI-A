@@ -6,65 +6,18 @@ using AngryBee.Boards;
 
 namespace AngryBee.PointEvaluator
 {
-    class Distance : Base
+    class Distance2 : Base
     {
-        public static int Avg = 10;
-        public override int Calculate(sbyte[,] ScoreBoard, in ColoredBoardSmallBigger MePainted, int Turn, Player Me, Player Enemy)
+        public override int Calculate(sbyte[,] ScoreBoard, in ColoredBoardSmallBigger Painted, int Turn, Player Me, Player Enemy)
         {
-
-            MachineLearning.choice Choice = new MachineLearning.choice();
-
-            ColoredBoardSmallBigger checker = new ColoredBoardSmallBigger(MePainted.Width, MePainted.Height);   //!checker == 領域
-            double result = 0;
-            uint width = MePainted.Width;
-            uint height = MePainted.Height;
+            ColoredBoardSmallBigger checker = new ColoredBoardSmallBigger(Painted.Width, Painted.Height);   //!checker == 領域
+            int result = 0;
+            uint width = Painted.Width;
+            uint height = Painted.Height;
             for (uint x = 0; x < width; ++x)
                 for (uint y = 0; y < height; ++y)
                 {
-                    if (MePainted[x, y])
-                    {
-                        if (ScoreBoard[x, y] <= Avg) result += ScoreBoard[x, y] + Choice.DNAs[Choice.tested, 1];
-                        else result += ScoreBoard[x, y] + Choice.DNAs[Choice.tested, 0];
-                        checker[x, y] = true;
-                    }
-                }
-
-            BadSpaceFill(ref checker, width, height);
-
-            double NotChecker = 0.0;
-            for (uint x = 0; x < width; ++x)
-                for (uint y = 0; y < height; ++y)
-                    if (!checker[x, y])
-                        NotChecker += Math.Abs(ScoreBoard[x, y]);
-            result += NotChecker * Turn * Choice.DNAs[Choice.tested, 2];
-
-            //差分計算
-            double DistanceScore = 0;
-            for (uint x = 0; x < width; ++x)
-                for(uint y = 0; y < height; ++y)
-                {
-                    if (MePainted[x, y] || !checker[x, y]) continue;
-                    if (ScoreBoard[x, y] <= Avg) continue;
-                    double distMe1 = Math.Max(Math.Abs(Me.Agent1.X - x), Math.Abs(Me.Agent1.Y - y));
-                    double distMe2 = Math.Max(Math.Abs(Me.Agent2.X - x), Math.Abs(Me.Agent2.Y - y));
-                    
-                    DistanceScore += (ScoreBoard[x, y] / Math.Min(distMe1, distMe2));
-                }
-            //Console.WriteLine("result:{0}, DistanceScore:{1}", result, DistanceScore);
-
-            return (int)(result * Choice.DNAs[Choice.tested, 3] + DistanceScore * Choice.DNAs[Choice.tested, 4]);
-        }
-
-        public int Calculate2(sbyte[,] ScoreBoard, in ColoredBoardSmallBigger MePainted, int Turn, Player Me, Player Enemy)
-        {
-            ColoredBoardSmallBigger checker = new ColoredBoardSmallBigger(MePainted.Width, MePainted.Height);   //!checker == 領域
-            double result = 0;
-            uint width = MePainted.Width;
-            uint height = MePainted.Height;
-            for (uint x = 0; x < width; ++x)
-                for (uint y = 0; y < height; ++y)
-                {
-                    if (MePainted[x, y])
+                    if (Painted[x, y])
                     {
                         result += ScoreBoard[x, y];
                         checker[x, y] = true;
@@ -73,29 +26,29 @@ namespace AngryBee.PointEvaluator
 
             BadSpaceFill(ref checker, width, height);
 
-            double NotChecker = 0.0;
             for (uint x = 0; x < width; ++x)
                 for (uint y = 0; y < height; ++y)
                     if (!checker[x, y])
-                        NotChecker += Math.Abs(ScoreBoard[x, y]);
-            result += NotChecker * Turn / 50;
-            
+                        result += Math.Abs(ScoreBoard[x, y]);
+
+
             //差分計算
-            double DistanceScore = 0;
+            int DistanceScore = 0;
             for (uint x = 0; x < width; ++x)
                 for (uint y = 0; y < height; ++y)
                 {
-                    if (MePainted[x, y] || !checker[x, y]) continue;
-                    if (ScoreBoard[x, y] <= Avg) continue;
-                    double distMe1 = Math.Max(Math.Abs(Me.Agent1.X - x), Math.Abs(Me.Agent1.Y - y));
-                    double distMe2 = Math.Max(Math.Abs(Me.Agent2.X - x), Math.Abs(Me.Agent2.Y - y));
+                    if (Painted[x, y] || !checker[x, y]) continue;
+                    if (ScoreBoard[x, y] <= PointEvaluator.Distance.Avg) continue;
+                    double distMa1 = Math.Sqrt(Math.Pow(Me.Agent1.X - x, 2.0) + Math.Pow(Me.Agent1.Y - y, 2.0));
+                    double distMa2 = Math.Sqrt(Math.Pow(Me.Agent2.X - x, 2.0) + Math.Pow(Me.Agent2.Y - y, 2.0));
+                    double distEn1 = (Math.Pow(Enemy.Agent1.X - x, 2.0) + Math.Pow(Enemy.Agent1.Y - y, 2.0));
+                    double distEn2 = (Math.Pow(Enemy.Agent2.X - x, 2.0) + Math.Pow(Enemy.Agent2.Y - y, 2.0));
 
-                    DistanceScore += (ScoreBoard[x, y] / Math.Min(distMe1, distMe2));
+                    DistanceScore += (int)((-Math.Min(distMa1, distMa2) + Math.Min(distEn1, distEn2)) * ScoreBoard[x, y]);
                 }
 
-            Console.WriteLine("result:{0}, DistanceScore:{1}", result, DistanceScore);
 
-            return (int)(result * 2000 + DistanceScore);
+            return result * 1000 + DistanceScore;
         }
 
         //囲いを見つける
