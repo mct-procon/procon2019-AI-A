@@ -9,7 +9,7 @@ namespace AngryBee
         public static void Main(string[] args)
 		{
 			int aiType = 0;
-			Console.WriteLine("AIの種類を入力(0:Aho, 1:Naotti, 2:Aoki_8, 3:Aho_8, 4:SA_AI, 5:DifEva, 6:Beam)");
+			Console.WriteLine("AIの種類を入力(0:Aho, 1:Naotti, 2:Aoki_8, 3:Aho_8, 4:SA_AI, 5:DifEva, 6:Beam, 7:ADist)");
 			aiType = int.Parse(Console.ReadLine());
 
 			MCTProcon30Protocol.AIFramework.AIBase AI = null;
@@ -41,7 +41,13 @@ namespace AngryBee
             {
                 int greedyMaxDepth = 4;
                 int BeamWidth = 4;
+                Console.WriteLine("ビーム幅");
+                BeamWidth = int.Parse(Console.ReadLine());
                 AI = new AI.BeamAI(1, greedyMaxDepth, BeamWidth);
+            }
+            if(aiType == 7)
+            {
+                AI = new AI.AgentDistanceAI(1);
             }
             
             int portId;

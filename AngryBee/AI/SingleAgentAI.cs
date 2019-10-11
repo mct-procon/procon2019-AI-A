@@ -34,7 +34,7 @@ namespace AngryBee.AI
         private Decision lastTurnDecided = null;		//1ターン前に「実際に」打った手（競合していた場合, 競合手==lastTurnDecidedとなる。競合していない場合は, この変数は探索に使用されない）
         public int StartDepth { get; set; } = 1;
 
-        public SingleAgentAI(int startDepth = 0, int greedyMaxDepth = 0)
+        public SingleAgentAI(int startDepth = 0)
         {
             for (int i = 0; i < 50; ++i)
             {
@@ -59,7 +59,7 @@ namespace AngryBee.AI
             int maxDepth = (TurnCount - CurrentTurn) + 1;
             PointEvaluator.Base evaluator = (TurnCount / 3 * 2) < CurrentTurn ? PointEvaluator_Normal : PointEvaluator_Dispersion;
             SearchState state = new SearchState(MyBoard, EnemyBoard, MyAgents, EnemyAgents);
-            int score = PointEvaluator_Normal.Calculate(ScoreBoard, state.MeBoard, 0, state.Me, state.Enemy) - PointEvaluator_Normal.Calculate(ScoreBoard, state.EnemyBoard, 0, state.Enemy, state.Me);
+            int score = PointEvaluator_Normal.Calculate(ScoreBoard, state.MeBoard, 0, state.Me, state.Enemy, AgentsCount) - PointEvaluator_Normal.Calculate(ScoreBoard, state.EnemyBoard, 0, state.Enemy, state.Me, AgentsCount);
 
             Log("TurnCount = {0}, CurrentTurn = {1}", TurnCount, CurrentTurn);
             //if (!(lastTurnDecided is null)) Log("IsAgent1Moved = {0}, IsAgent2Moved = {1}, lastTurnDecided = {2}", IsAgent1Moved, IsAgent2Moved, lastTurnDecided);
@@ -138,7 +138,7 @@ namespace AngryBee.AI
             var sw = System.Diagnostics.Stopwatch.StartNew();
             if (deepness == 0)
             {
-                return evaluator.Calculate(ScoreBoard, state.MeBoard, 0, state.Me, state.Enemy) - evaluator.Calculate(ScoreBoard, state.EnemyBoard, 0, state.Enemy, state.Me);
+                return evaluator.Calculate(ScoreBoard, state.MeBoard, 0, state.Me, state.Enemy, AgentsCount) - evaluator.Calculate(ScoreBoard, state.EnemyBoard, 0, state.Enemy, state.Me, AgentsCount);
             }
 
             Ways ways = state.MakeMoves(AgentsCount, ScoreBoard);

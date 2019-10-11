@@ -21,7 +21,7 @@ namespace AngryBee.PointEvaluator
                 this.y = y;
             }
         }
-        public override int Calculate(sbyte[,] ScoreBoard, in ColoredBoardNormalSmaller Painted, int Turn, Unsafe8Array<Point> Me, Unsafe8Array<Point> Enemy)
+        public override int Calculate(sbyte[,] ScoreBoard, in ColoredBoardNormalSmaller Painted, int Turn, Unsafe8Array<Point> Me, Unsafe8Array<Point> Enemy, int AgentsCount)
         {
             ColoredBoardNormalSmaller checker = new ColoredBoardNormalSmaller(Painted.Width, Painted.Height);
             int result = 0;
@@ -69,7 +69,7 @@ namespace AngryBee.PointEvaluator
                     }
                 }
             rec = rec / checkedCount * DispersionRate;
-            return (int)rec + result + checkedCount*2;
+            return (int)rec + result + checkedCount * 2;
         }
 
         public unsafe void BadSpaceFill(ref ColoredBoardNormalSmaller Checker, byte width, byte height)
